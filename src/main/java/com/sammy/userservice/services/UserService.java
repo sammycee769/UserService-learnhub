@@ -39,7 +39,7 @@ public class UserService {
 
     public UserResponse getUserByPhoneNumber (String phoneNumber) {
         User foundUser = userRepository.findByPhoneNumberAndActive(phoneNumber,true)
-                .orElseThrow(()-> new UserNotFoundException("User not found  inactive"));
+                .orElseThrow(()-> new UserNotFoundException("User not found or inactive"));
         return mapToResponse(foundUser);
     }
 
@@ -49,6 +49,7 @@ public class UserService {
                 .map((user->mapToResponse(user)));
     }
 
+
     public Page<UserResponse> searchUser(String search) {
         Pageable pageable = PageRequest.of(0,10, Sort.by("userName").ascending());
         return userRepository.searchUsers(search,true,pageable)
@@ -56,7 +57,7 @@ public class UserService {
     }
     public void deleteUserById (String userId) {
         User foundUser = userRepository.findByIdAndActive(userId,true)
-                .orElseThrow(()-> new UserNotFoundException("User not found inactive"));
+                .orElseThrow(()-> new UserNotFoundException("User not found or inactive"));
         userRepository.delete(foundUser);
         userEventProducer.publishUserDeleted(UserDeletedEvent.builder()
                 .id(foundUser.getId())
@@ -66,7 +67,7 @@ public class UserService {
 
     public UserResponse deactivateUserById (String userId) {
         User foundUser = userRepository.findByIdAndActive(userId,true)
-                .orElseThrow(()-> new UserNotFoundException("User not found inactive"));
+                .orElseThrow(()-> new UserNotFoundException("User not found or inactive"));
         foundUser.setActive(false);
         userRepository.save(foundUser);
         userEventProducer.publishUserDeactivated(UserDeactivatedEvent.builder()
@@ -121,6 +122,7 @@ public class UserService {
                 .dateOfBirth(foundUser.getDateOfBirth())
                 .phoneNumber(foundUser.getPhoneNumber())
                 .role(foundUser.getRole())
+                .age(foundUser.getAge())
                 .createdAt(foundUser.getCreatedAt())
                 .build();
     }

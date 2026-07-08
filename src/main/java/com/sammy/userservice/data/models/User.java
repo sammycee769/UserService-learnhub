@@ -47,8 +47,6 @@ public class User {
     @NotBlank(message = "Date of birth is required")
     private LocalDate dateOfBirth;
 
-    private int age = getAge();
-
     @Indexed(unique = true)
     @Email
     @NotBlank(message = "Email is required")

@@ -5,10 +5,13 @@ import com.sammy.userservice.dtos.responses.ApiResponse;
 import com.sammy.userservice.dtos.responses.UserResponse;
 import com.sammy.userservice.exceptions.UserNotFoundException;
 import com.sammy.userservice.services.UserService;
+import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
 public class UserController {
-
     private final UserService userService;
 
     @GetMapping("/{id}")
