@@ -6,6 +6,11 @@ import com.sammy.userservice.data.repositories.UserRepo;
 import com.sammy.userservice.dtos.requests.UpdateUserRequest;
 import com.sammy.userservice.dtos.responses.UserResponse;
 import com.sammy.userservice.exceptions.UserNotFoundException;
+import com.sammy.userservice.kafka.events.UserActivatedEvent;
+import com.sammy.userservice.kafka.events.UserDeactivatedEvent;
+import com.sammy.userservice.kafka.events.UserDeletedEvent;
+import com.sammy.userservice.kafka.events.UserUpdatedEvent;
+import com.sammy.userservice.kafka.producer.UserEventProducer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepo userRepository;
+    private final UserEventProducer userEventProducer;
 
     public UserResponse getUserById (String userId) {
         User foundUser = userRepository.findByIdAndActive(userId,true)
@@ -52,6 +58,10 @@ public class UserService {
         User foundUser = userRepository.findByIdAndActive(userId,true)
                 .orElseThrow(()-> new UserNotFoundException("User not found inactive"));
         userRepository.delete(foundUser);
+        userEventProducer.publishUserDeleted(UserDeletedEvent.builder()
+                .id(foundUser.getId())
+                .email(foundUser.getEmail())
+                .build());
     }
 
     public UserResponse deactivateUserById (String userId) {
@@ -59,6 +69,10 @@ public class UserService {
                 .orElseThrow(()-> new UserNotFoundException("User not found inactive"));
         foundUser.setActive(false);
         userRepository.save(foundUser);
+        userEventProducer.publishUserDeactivated(UserDeactivatedEvent.builder()
+        .id(foundUser.getId())
+                .email(foundUser.getEmail())
+                .build());
         return mapToResponse(foundUser);
     }
 
@@ -67,6 +81,10 @@ public class UserService {
                 .orElseThrow(()-> new UserNotFoundException("User not found or active"));
         foundUser.setActive(true);
         userRepository.save(foundUser);
+        userEventProducer.publishUserActivated(UserActivatedEvent.builder()
+                .id(foundUser.getId())
+                .email(foundUser.getEmail())
+                .build());
         return mapToResponse(foundUser);
     }
 
@@ -81,6 +99,12 @@ public class UserService {
         if (request.getDateOfBirth() != null) foundUser.setDateOfBirth(request.getDateOfBirth());
         if (request.getPhoneNumber() != null) foundUser.setPhoneNumber(request.getPhoneNumber());
         userRepository.save(foundUser);
+        userEventProducer.publishUserUpdated(UserUpdatedEvent.builder()
+                .id(foundUser.getId())
+                .userName(foundUser.getUserName())
+                .email(foundUser.getEmail())
+                .phoneNumber(foundUser.getPhoneNumber())
+                .build());
         return mapToResponse(foundUser);
 
     }
