@@ -1,10 +1,7 @@
 package com.sammy.userservice.data.models;
 
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -44,16 +41,13 @@ public class User {
     @NotNull(message = "gender is required")
     private Gender gender;
 
-    @NotBlank(message = "Date of birth is required")
+    @NotNull(message = "Date of birth is required")
     private LocalDate dateOfBirth;
 
     @Indexed(unique = true)
     @Email
     @NotBlank(message = "Email is required")
     private String email;
-
-    @NotBlank(message ="Password is required")
-    private String passwordHash;
 
     @Pattern(regexp = "^(\\+234|0)(70|8[01]|9[01])[0-9]{8}$", message = "Invalid Nigerian phone number")
     private String phoneNumber;
